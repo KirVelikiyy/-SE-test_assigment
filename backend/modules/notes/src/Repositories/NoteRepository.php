@@ -47,4 +47,11 @@ class NoteRepository
 
         return $note->fresh();
     }
+
+    public function getAllNotesByUserId(int $userId): \Illuminate\Database\Eloquent\Collection
+    {
+        return $this->query()
+            ->where('user_id', $userId)
+            ->get();
+    }
 }
