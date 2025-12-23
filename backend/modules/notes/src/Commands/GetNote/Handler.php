@@ -2,6 +2,7 @@
 
 namespace Notes\Commands\GetNote;
 
+use App\Repositories\UserRepository;
 use Notes\Exceptions\NoteNotFound;
 use Notes\Exceptions\NotePermissionDenied;
 use Notes\Models\Note;
@@ -11,6 +12,7 @@ readonly class Handler
 {
     public function __construct(
         private NoteRepository $repository,
+        private UserRepository $userRepository,
     ) {
     }
 
@@ -21,7 +23,9 @@ readonly class Handler
             throw new NoteNotFound();
         }
 
-        if ($note->user_id != $command->userId) {
+        $user = $this->userRepository->getUserById($command->userId);
+
+        if ($note->user_id != $command->userId && !$user->isAdmin()) {
             throw new NotePermissionDenied();
         }
 

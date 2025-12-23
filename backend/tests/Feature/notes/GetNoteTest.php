@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\UserRole;
 use App\Models\User;
 use Notes\Models\Note;
 use function Pest\Laravel\actingAs;
@@ -56,5 +57,37 @@ test('returns 404 when note does not exist', function () {
     $response = actingAs($user)->getJson('/api/notes/99999');
 
     $response->assertStatus(404);
+});
+
+test('admin can get note of another user', function () {
+    $owner = User::factory()->create();
+    $admin = User::factory()->create(['role' => UserRole::Admin]);
+    $note = Note::factory()->create([
+        'user_id' => $owner->id,
+        'title' => 'Test Note',
+        'body' => ['text' => 'Test content'],
+    ]);
+
+    $response = actingAs($admin)->getJson("/api/notes/{$note->id}");
+
+    $response->assertStatus(200)
+        ->assertJsonStructure([
+            'data' => [
+                'id',
+                'user_id',
+                'title',
+                'body',
+                'created_at',
+                'updated_at',
+            ],
+        ])
+        ->assertJson([
+            'data' => [
+                'id' => $note->id,
+                'user_id' => $owner->id,
+                'title' => 'Test Note',
+                'body' => ['text' => 'Test content'],
+            ],
+        ]);
 });
 

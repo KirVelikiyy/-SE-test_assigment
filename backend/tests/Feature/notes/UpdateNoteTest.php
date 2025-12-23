@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Support\Facades\Event;
 use Notes\Events\NoteUpdated;
@@ -165,5 +166,42 @@ test('returns 422 when body is not an array', function () {
 
     $response->assertStatus(422)
         ->assertJsonValidationErrors(['body']);
+});
+
+test('admin can update note of another user', function () {
+    Event::fake();
+    
+    $owner = User::factory()->create();
+    $admin = User::factory()->create(['role' => UserRole::Admin]);
+    $note = Note::factory()->create([
+        'user_id' => $owner->id,
+        'title' => 'Original Title',
+        'body' => ['text' => 'Original content'],
+    ]);
+
+    $updateData = [
+        'title' => 'Updated by Admin',
+        'body' => ['text' => 'Updated content by admin'],
+    ];
+
+    $response = actingAs($admin)->putJson("/api/notes/{$note->id}", $updateData);
+
+    $response->assertStatus(200)
+        ->assertJson([
+            'data' => [
+                'id' => $note->id,
+                'title' => 'Updated by Admin',
+                'body' => ['text' => 'Updated content by admin'],
+            ],
+        ]);
+
+    assertDatabaseHas('notes', [
+        'id' => $note->id,
+        'title' => 'Updated by Admin',
+    ]);
+
+    Event::assertDispatched(NoteUpdated::class, function ($event) use ($note) {
+        return $event->noteId === $note->id;
+    });
 });
 

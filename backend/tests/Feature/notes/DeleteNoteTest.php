@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Support\Facades\Event;
 use Notes\Events\NoteDeleted;
@@ -60,6 +61,32 @@ test('returns 404 when note does not exist', function () {
     $response->assertStatus(404);
     
     Event::assertNotDispatched(NoteDeleted::class);
+});
+
+test('admin can delete note of another user', function () {
+    Event::fake();
+    
+    $owner = User::factory()->create();
+    $admin = User::factory()->create(['role' => UserRole::Admin]);
+    $note = Note::factory()->create([
+        'user_id' => $owner->id,
+        'title' => 'Test Note',
+        'body' => ['text' => 'Test content'],
+    ]);
+
+    $noteId = $note->id;
+
+    $response = actingAs($admin)->deleteJson("/api/notes/{$note->id}");
+
+    $response->assertStatus(204);
+
+    assertDatabaseMissing('notes', [
+        'id' => $noteId,
+    ]);
+
+    Event::assertDispatched(NoteDeleted::class, function ($event) use ($noteId) {
+        return $event->note->id === $noteId;
+    });
 });
 
 
