@@ -2,10 +2,12 @@
 
 namespace Notes\Events;
 
+use Notes\Models\Note;
+
 readonly class NoteCreated
 {
     public function __construct(
-        public int $noteId,
+        public Note $note,
     ) {
     }
 }

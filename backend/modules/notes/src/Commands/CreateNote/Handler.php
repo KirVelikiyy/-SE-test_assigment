@@ -22,7 +22,7 @@ class Handler
             $command->dto,
         );
 
-        $this->eventDispatcher->dispatch(new NoteCreated($note->id));
+        $this->eventDispatcher->dispatch(new NoteCreated($note));
 
         return $note;
     }

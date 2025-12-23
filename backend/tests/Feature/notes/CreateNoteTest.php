@@ -39,7 +39,7 @@ test('can create a note', function () {
     ]);
 
     Event::assertDispatched(NoteCreated::class, function ($event) use ($noteId) {
-        return $event->noteId === $noteId;
+        return $event->note->id === $noteId;
     });
 });
 
