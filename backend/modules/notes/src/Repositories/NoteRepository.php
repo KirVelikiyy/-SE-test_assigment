@@ -31,8 +31,20 @@ class NoteRepository
 
     public function getNoteById(int $noteId): ?Note
     {
-      return $this->query()
-      ->where('id', $noteId)
-      ->first();
+        return $this->query()
+            ->where('id', $noteId)
+            ->first();
+    }
+
+    public function updateNote(int $noteId, NoteDTO $dto): Note
+    {
+        $note = $this->query()->findOrFail($noteId);
+
+        $note->update([
+            'title' => $dto->title,
+            'body' => $dto->body,
+        ]);
+
+        return $note->fresh();
     }
 }

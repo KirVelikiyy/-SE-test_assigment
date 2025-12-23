@@ -2,7 +2,7 @@
 
 namespace Notes\DTOs;
 
-use Notes\Http\Actions\Create\Request;
+use Illuminate\Http\Request;
 
 readonly class NoteDTO
 {

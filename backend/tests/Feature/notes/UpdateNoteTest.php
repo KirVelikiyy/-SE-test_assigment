@@ -1,0 +1,153 @@
+<?php
+
+use App\Models\User;
+use Notes\Models\Note;
+use function Pest\Laravel\actingAs;
+use function Pest\Laravel\assertDatabaseHas;
+use function Pest\Laravel\putJson;
+
+test('can update a note', function () {
+    $user = User::factory()->create();
+    $note = Note::factory()->create([
+        'user_id' => $user->id,
+        'title' => 'Original Title',
+        'body' => ['text' => 'Original content'],
+    ]);
+
+    $updateData = [
+        'title' => 'Updated Title',
+        'body' => ['text' => 'Updated content'],
+    ];
+
+    $response = actingAs($user)->putJson("/api/notes/{$note->id}", $updateData);
+
+    $response->assertStatus(200)
+        ->assertJsonStructure([
+            'data' => [
+                'id',
+                'user_id',
+                'title',
+                'body',
+                'created_at',
+                'updated_at',
+            ],
+        ])
+        ->assertJson([
+            'data' => [
+                'id' => $note->id,
+                'title' => 'Updated Title',
+                'body' => ['text' => 'Updated content'],
+            ],
+        ]);
+
+    assertDatabaseHas('notes', [
+        'id' => $note->id,
+        'title' => 'Updated Title',
+    ]);
+});
+
+test('returns 403 when trying to update note of another user', function () {
+    $owner = User::factory()->create();
+    $otherUser = User::factory()->create();
+    $note = Note::factory()->create([
+        'user_id' => $owner->id,
+        'title' => 'Original Title',
+        'body' => ['text' => 'Original content'],
+    ]);
+
+    $updateData = [
+        'title' => 'Updated Title',
+        'body' => ['text' => 'Updated content'],
+    ];
+
+    $response = actingAs($otherUser)->putJson("/api/notes/{$note->id}", $updateData);
+
+    $response->assertStatus(403);
+});
+
+test('returns 404 when note does not exist', function () {
+    $user = User::factory()->create();
+
+    $updateData = [
+        'title' => 'Updated Title',
+        'body' => ['text' => 'Updated content'],
+    ];
+
+    $response = actingAs($user)->putJson('/api/notes/99999', $updateData);
+
+    $response->assertStatus(404);
+});
+
+test('returns 422 when title is missing', function () {
+    $user = User::factory()->create();
+    $note = Note::factory()->create([
+        'user_id' => $user->id,
+    ]);
+
+    $response = actingAs($user)->putJson("/api/notes/{$note->id}", [
+        'body' => ['text' => 'Some content'],
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['title']);
+});
+
+test('returns 422 when body is missing', function () {
+    $user = User::factory()->create();
+    $note = Note::factory()->create([
+        'user_id' => $user->id,
+    ]);
+
+    $response = actingAs($user)->putJson("/api/notes/{$note->id}", [
+        'title' => 'Test Note',
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['body']);
+});
+
+test('returns 422 when title is too short', function () {
+    $user = User::factory()->create();
+    $note = Note::factory()->create([
+        'user_id' => $user->id,
+    ]);
+
+    $response = actingAs($user)->putJson("/api/notes/{$note->id}", [
+        'title' => 'A',
+        'body' => ['text' => 'Some content'],
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['title']);
+});
+
+test('returns 422 when title is too long', function () {
+    $user = User::factory()->create();
+    $note = Note::factory()->create([
+        'user_id' => $user->id,
+    ]);
+
+    $response = actingAs($user)->putJson("/api/notes/{$note->id}", [
+        'title' => str_repeat('a', 256),
+        'body' => ['text' => 'Some content'],
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['title']);
+});
+
+test('returns 422 when body is not an array', function () {
+    $user = User::factory()->create();
+    $note = Note::factory()->create([
+        'user_id' => $user->id,
+    ]);
+
+    $response = actingAs($user)->putJson("/api/notes/{$note->id}", [
+        'title' => 'Test Note',
+        'body' => 'not an array',
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['body']);
+});
+
