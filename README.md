@@ -4,17 +4,64 @@ API для управления заметками с аутентификаци
 
 ## Требования
 
-- PHP >= 8.2
-- Composer
-- SQLite / MySQL / PostgreSQL
-- Node.js и NPM (опционально, для фронтенда)
+- Docker и Docker Compose (рекомендуется)
+- PHP >= 8.2 (для локальной разработки без Docker)
+- Composer (для локальной разработки без Docker)
 
-## Установка и настройка
+## Быстрый старт с Docker
 
 ### 1. Клонирование репозитория
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/KirVelikiyy/-SE-test_assigment test_assigment
+cd test_assigment
+```
+
+### 2. Настройка окружения
+
+Скопируйте и настройте файл `.env` в директории `docker/`:
+
+```bash
+cd docker
+cp .env.example .env  # если есть пример, или создайте файл вручную
+```
+
+Отредактируйте `docker/.env` и настройте необходимые переменные окружения (например, пароли БД, ключи приложения).
+
+### 3. Запуск контейнеров
+
+```bash
+cd docker
+docker compose up -d
+```
+
+Это запустит:
+- **backend** - PHP приложение (порт 8000)
+- **postgres** - PostgreSQL база данных (работает только в bridge сети, без проброса портов на хост)
+
+### 4. Установка зависимостей и миграции
+
+Выполните команды внутри контейнера backend:
+
+```bash
+cd docker
+docker compose exec backend composer install
+docker compose exec backend php artisan key:generate
+docker compose exec backend php artisan migrate
+docker compose exec backend php artisan passport:keys
+docker compose exec backend php artisan db:seed
+```
+
+### 5. Доступ к приложению
+
+После запуска приложение будет доступно по адресу: `http://localhost:8000`
+
+## Установка и настройка (без Docker)
+
+### 1. Клонирование репозитория
+
+```bash
+git clone https://github.com/KirVelikiyy/-SE-test_assigment test_assigment
 cd test_assigment/backend
 ```
 
@@ -111,7 +158,17 @@ php artisan migrate:fresh --seed
 
 ## Запуск приложения
 
-### Режим разработки
+### С Docker
+
+```bash
+cd docker
+docker compose up -d          # Запуск в фоне
+docker compose up             # Запуск с выводом логов
+docker compose down           # Остановка контейнеров
+docker compose restart        # Перезапуск контейнеров
+```
+
+### Без Docker (режим разработки)
 
 Запустите встроенный сервер Laravel:
 
@@ -121,7 +178,7 @@ php artisan serve
 
 Приложение будет доступно по адресу: `http://localhost:8000`
 
-### API Endpoints
+## API Endpoints
 
 API доступно по адресу: `http://localhost:8000/api`
 
@@ -146,6 +203,13 @@ http://localhost:8000/api/documentation
 
 Для генерации/обновления документации:
 
+**С Docker:**
+```bash
+cd docker
+docker compose exec backend php artisan l5-swagger:generate
+```
+
+**Без Docker:**
 ```bash
 php artisan l5-swagger:generate
 ```
@@ -170,11 +234,33 @@ curl -X POST http://localhost:8000/oauth/token \
 
 **Важно:** Сначала создайте OAuth Client:
 
+**С Docker:**
+```bash
+cd docker
+docker compose exec backend php artisan passport:client --password
+```
+
+**Без Docker:**
 ```bash
 php artisan passport:client --password
 ```
 
 ## Тестирование
+
+### С Docker
+
+```bash
+cd docker
+docker compose exec backend php artisan test
+```
+
+Запуск конкретного теста:
+
+```bash
+docker compose exec backend php artisan test --filter=CreateNoteTest
+```
+
+### Без Docker
 
 Запуск всех тестов:
 
@@ -195,6 +281,22 @@ php artisan test --coverage
 ```
 
 ## Структура проекта
+
+```
+test_assigment/
+├── backend/                 # Laravel приложение
+│   ├── app/
+│   ├── modules/
+│   │   ├── notes/          # Модуль управления заметками
+│   │   └── Notifications/  # Модуль уведомлений
+│   ├── database/
+│   ├── tests/
+│   └── ...
+├── docker/                  # Docker конфигурация
+│   ├── docker-compose.yml  # Конфигурация Docker Compose
+│   └── .env                # Переменные окружения для Docker сервисов
+└── Dockerfile              # Dockerfile для backend
+```
 
 ### Модули
 
@@ -221,6 +323,50 @@ php artisan test --coverage
 - `database/factories/` - Фабрики для тестовых данных
 - `tests/Feature/` - Функциональные тесты
 
+## Docker команды
+
+### Работа с контейнерами
+
+```bash
+cd docker
+
+# Запуск
+docker compose up -d
+
+# Остановка
+docker compose down
+
+# Просмотр логов
+docker compose logs -f backend
+docker compose logs -f postgres
+
+# Перезапуск
+docker compose restart backend
+
+# Выполнение команд внутри контейнера
+docker compose exec backend php artisan migrate
+docker compose exec backend composer install
+docker compose exec backend php artisan test
+```
+
+### Работа с базой данных
+
+```bash
+cd docker
+
+# Подключение к PostgreSQL
+docker compose exec postgres psql -U ${DB_USERNAME} -d ${DB_DATABASE}
+
+# Выполнение миграций
+docker compose exec backend php artisan migrate
+
+# Запуск сидеров
+docker compose exec backend php artisan db:seed
+
+# Пересоздание БД с сидерами
+docker compose exec backend php artisan migrate:fresh --seed
+```
+
 ## Особенности
 
 ### Роли пользователей
@@ -246,6 +392,34 @@ php artisan test --coverage
 
 ## Полезные команды
 
+### С Docker
+
+```bash
+cd docker
+
+# Очистка кэша
+docker compose exec backend php artisan cache:clear
+docker compose exec backend php artisan config:clear
+docker compose exec backend php artisan route:clear
+
+# Пересоздание базы данных с сидерами
+docker compose exec backend php artisan migrate:fresh --seed
+
+# Генерация документации API
+docker compose exec backend php artisan l5-swagger:generate
+
+# Создание OAuth клиента
+docker compose exec backend php artisan passport:client --password
+
+# Просмотр маршрутов
+docker compose exec backend php artisan route:list
+
+# Запуск очереди (для асинхронных задач)
+docker compose exec backend php artisan queue:work
+```
+
+### Без Docker
+
 ```bash
 # Очистка кэша
 php artisan cache:clear
@@ -269,12 +443,34 @@ php artisan route:list
 php artisan queue:work
 ```
 
+## Конфигурация Docker
+
+### Структура Docker конфигурации
+
+- `docker/docker-compose.yml` - Конфигурация Docker Compose
+- `docker/.env` - Переменные окружения для сервисов (включая настройки БД, приложения и др.)
+
+### Особенности конфигурации
+
+- **PostgreSQL** работает только в network bridge (без проброса портов на хост)
+- **Backend** имеет проброс портов `8000:8000` на хост для удобства разработки
+- Все сервисы используют общую сеть `app-network` (bridge driver)
+- Данные PostgreSQL сохраняются в volume `postgres_data`
+- Файл `.env` из директории `docker/` монтируется в контейнер backend как `/var/www/html/.env`
+
 ## Разработка
 
 ### Code Style
 
 Проект использует Laravel Pint для форматирования кода:
 
+**С Docker:**
+```bash
+cd docker
+docker compose exec backend ./vendor/bin/pint
+```
+
+**Без Docker:**
 ```bash
 ./vendor/bin/pint
 ```

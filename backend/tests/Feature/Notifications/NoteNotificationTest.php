@@ -10,6 +10,7 @@ test('sends admin notification when note is created', function () {
     Mail::fake();
     
     config(['mail.admin_recipient' => 'admin@example.com']);
+    config(['queue.default' => 'sync']);
     
     $user = User::factory()->create();
 
@@ -32,6 +33,7 @@ test('sends notification to configured admin recipient', function () {
     Mail::fake();
     
     config(['mail.admin_recipient' => 'custom-admin@example.com']);
+    config(['queue.default' => 'sync']);
     
     $user = User::factory()->create();
 
