@@ -30,7 +30,6 @@ docker compose exec backend php artisan db:seed
 ## Запуск тестов
 
 ```bash
-cd docker
 docker compose exec backend php artisan test
 ```
 
@@ -40,18 +39,6 @@ docker compose exec backend php artisan test
 docker compose exec backend php artisan test --filter=CreateNoteTest
 ```
 
-## Запуск сидеров
-
-```bash
-cd docker
-docker compose exec backend php artisan db:seed
-```
-
-Для полного пересоздания базы данных с сидерами:
-
-```bash
-docker compose exec backend php artisan migrate:fresh --seed
-```
 
 ## Документация API
 
@@ -69,7 +56,6 @@ docker compose exec backend php artisan l5-swagger:generate
 #### 1. Создание OAuth клиента
 
 ```bash
-cd docker
 docker compose exec backend php artisan passport:client --password
 ```
 
