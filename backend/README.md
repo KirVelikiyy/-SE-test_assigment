@@ -1,59 +1,295 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Notes API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+API для управления заметками с аутентификацией через Laravel Passport. Реализован на базе Laravel 12 с модульной архитектурой.
 
-## About Laravel
+## Требования
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- PHP >= 8.2
+- Composer
+- SQLite / MySQL / PostgreSQL
+- Node.js и NPM (опционально, для фронтенда)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Установка и настройка
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 1. Клонирование репозитория
 
-## Learning Laravel
+```bash
+git clone <repository-url>
+cd test_assigment/backend
+```
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### 2. Установка зависимостей
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```bash
+composer install
+```
 
-## Laravel Sponsors
+### 3. Настройка окружения
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Скопируйте файл `.env.example` в `.env`:
 
-### Premium Partners
+```bash
+cp .env.example .env
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+Сгенерируйте ключ приложения:
 
-## Contributing
+```bash
+php artisan key:generate
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Настройте переменные окружения в файле `.env`:
 
-## Code of Conduct
+```env
+APP_NAME="Notes API"
+APP_ENV=local
+APP_KEY=
+APP_DEBUG=true
+APP_URL=http://localhost:8000
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+DB_CONNECTION=sqlite
+# или для MySQL/PostgreSQL:
+# DB_CONNECTION=mysql
+# DB_HOST=127.0.0.1
+# DB_PORT=3306
+# DB_DATABASE=notes_db
+# DB_USERNAME=root
+# DB_PASSWORD=
 
-## Security Vulnerabilities
+MAIL_MAILER=log
+MAIL_ADMIN_RECIPIENT=admin@example.com
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### 4. Создание базы данных
 
-## License
+Для SQLite создайте файл базы данных:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+touch database/database.sqlite
+```
+
+Или настройте подключение к MySQL/PostgreSQL в `.env`.
+
+### 5. Запуск миграций
+
+```bash
+php artisan migrate
+```
+
+### 6. Установка Laravel Passport
+
+Создайте ключи шифрования для Passport:
+
+```bash
+php artisan passport:keys
+```
+
+Или установите Passport с автоматической настройкой:
+
+```bash
+php artisan install:api --passport
+```
+
+### 7. Заполнение базы данных тестовыми данными
+
+Запустите сидеры для создания тестовых пользователей и заметок:
+
+```bash
+php artisan db:seed
+```
+
+Это создаст:
+- Администратора: `admin@example.com` / `password`
+- 5-10 обычных пользователей (все с паролем `password`)
+- По 5-10 заметок для каждого пользователя
+
+Для полного пересоздания базы данных:
+
+```bash
+php artisan migrate:fresh --seed
+```
+
+## Запуск приложения
+
+### Режим разработки
+
+Запустите встроенный сервер Laravel:
+
+```bash
+php artisan serve
+```
+
+Приложение будет доступно по адресу: `http://localhost:8000`
+
+### API Endpoints
+
+API доступно по адресу: `http://localhost:8000/api`
+
+#### Основные маршруты:
+
+- `POST /oauth/token` - Получение OAuth2 токена
+- `GET /api/notes` - Получить все заметки текущего пользователя
+- `POST /api/notes` - Создать новую заметку
+- `GET /api/notes/{id}` - Получить заметку по ID
+- `PUT /api/notes/{id}` - Обновить заметку
+- `DELETE /api/notes/{id}` - Удалить заметку
+
+## Документация API
+
+### Swagger UI
+
+После генерации документации доступна по адресу:
+
+```
+http://localhost:8000/api/documentation
+```
+
+Для генерации/обновления документации:
+
+```bash
+php artisan l5-swagger:generate
+```
+
+### Получение токена доступа
+
+Для получения токена доступа используйте OAuth2 Password Grant:
+
+```bash
+curl -X POST http://localhost:8000/oauth/token \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "grant_type": "password",
+    "client_id": "YOUR_CLIENT_ID",
+    "client_secret": "YOUR_CLIENT_SECRET",
+    "username": "admin@example.com",
+    "password": "password",
+    "scope": ""
+  }'
+```
+
+**Важно:** Сначала создайте OAuth Client:
+
+```bash
+php artisan passport:client --password
+```
+
+## Тестирование
+
+Запуск всех тестов:
+
+```bash
+php artisan test
+```
+
+Запуск конкретного теста:
+
+```bash
+php artisan test --filter=CreateNoteTest
+```
+
+Запуск тестов с покрытием:
+
+```bash
+php artisan test --coverage
+```
+
+## Структура проекта
+
+### Модули
+
+- `modules/notes/` - Модуль управления заметками
+  - `src/Commands/` - Команды (Create, Update, Delete, Get, GetAll)
+  - `src/Events/` - События (NoteCreated, NoteUpdated, NoteDeleted)
+  - `src/Http/Actions/` - HTTP обработчики
+  - `src/Models/` - Модели
+  - `src/Repositories/` - Репозитории
+  - `src/Exceptions/` - Исключения
+
+- `modules/Notifications/` - Модуль уведомлений
+  - `src/Mail/` - Email классы
+  - `src/Listeners/` - Обработчики событий
+  - `src/Providers/` - Сервис-провайдеры
+
+### Основные компоненты
+
+- `app/Http/Controllers/` - Контроллеры (включая Swagger документацию)
+- `app/Models/` - Модели приложения (User)
+- `app/Enums/` - Перечисления (UserRole)
+- `app/Repositories/` - Репозитории (UserRepository)
+- `database/seeders/` - Сидеры для заполнения БД
+- `database/factories/` - Фабрики для тестовых данных
+- `tests/Feature/` - Функциональные тесты
+
+## Особенности
+
+### Роли пользователей
+
+- **Admin** - может управлять заметками всех пользователей
+- **User** - может управлять только своими заметками
+
+### Аутентификация
+
+Аутентификация реализована через Laravel Passport (OAuth2). Все API endpoints защищены middleware `auth:api`.
+
+### Уведомления
+
+При создании новой заметки администратору отправляется email-уведомление (асинхронно через очередь).
+
+### Архитектура
+
+Проект использует модульную архитектуру монолита:
+- Каждый модуль независим
+- Связь между модулями через события
+- Использование Command Bus паттерна
+- Разделение на слои (Commands, Actions, Repositories)
+
+## Полезные команды
+
+```bash
+# Очистка кэша
+php artisan cache:clear
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
+
+# Пересоздание базы данных с сидерами
+php artisan migrate:fresh --seed
+
+# Генерация документации API
+php artisan l5-swagger:generate
+
+# Создание OAuth клиента
+php artisan passport:client --password
+
+# Просмотр маршрутов
+php artisan route:list
+
+# Запуск очереди (для асинхронных задач)
+php artisan queue:work
+```
+
+## Разработка
+
+### Code Style
+
+Проект использует Laravel Pint для форматирования кода:
+
+```bash
+./vendor/bin/pint
+```
+
+### Структура модулей
+
+Каждый модуль следует структуре:
+- `Commands/` - бизнес-логика (Command + Handler)
+- `Http/Actions/` - HTTP слой (Action + Request + Response)
+- `Repositories/` - доступ к данным
+- `Models/` - Eloquent модели
+- `Events/` - события домена
+- `Exceptions/` - кастомные исключения
+- `Providers/` - сервис-провайдеры модуля
+
+## Лицензия
+
+MIT
