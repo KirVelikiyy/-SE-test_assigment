@@ -1,12 +1,16 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Support\Facades\Event;
+use Notes\Events\NoteUpdated;
 use Notes\Models\Note;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\putJson;
 
 test('can update a note', function () {
+    Event::fake();
+    
     $user = User::factory()->create();
     $note = Note::factory()->create([
         'user_id' => $user->id,
@@ -44,9 +48,15 @@ test('can update a note', function () {
         'id' => $note->id,
         'title' => 'Updated Title',
     ]);
+
+    Event::assertDispatched(NoteUpdated::class, function ($event) use ($note) {
+        return $event->noteId === $note->id;
+    });
 });
 
 test('returns 403 when trying to update note of another user', function () {
+    Event::fake();
+    
     $owner = User::factory()->create();
     $otherUser = User::factory()->create();
     $note = Note::factory()->create([
@@ -63,9 +73,13 @@ test('returns 403 when trying to update note of another user', function () {
     $response = actingAs($otherUser)->putJson("/api/notes/{$note->id}", $updateData);
 
     $response->assertStatus(403);
+    
+    Event::assertNotDispatched(NoteUpdated::class);
 });
 
 test('returns 404 when note does not exist', function () {
+    Event::fake();
+    
     $user = User::factory()->create();
 
     $updateData = [
@@ -76,6 +90,8 @@ test('returns 404 when note does not exist', function () {
     $response = actingAs($user)->putJson('/api/notes/99999', $updateData);
 
     $response->assertStatus(404);
+    
+    Event::assertNotDispatched(NoteUpdated::class);
 });
 
 test('returns 422 when title is missing', function () {

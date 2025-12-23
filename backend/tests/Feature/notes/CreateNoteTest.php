@@ -1,11 +1,15 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Support\Facades\Event;
+use Notes\Events\NoteCreated;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\postJson;
 
 test('can create a note', function () {
+    Event::fake();
+    
     $user = User::factory()->create();
 
     $noteData = [
@@ -27,9 +31,15 @@ test('can create a note', function () {
             ],
         ]);
 
+    $noteId = $response->json('data.id');
+
     assertDatabaseHas('notes', [
         'title' => 'Test Note',
     ]);
+
+    Event::assertDispatched(NoteCreated::class, function ($event) use ($noteId) {
+        return $event->noteId === $noteId;
+    });
 });
 
 test('returns 422 when title is missing', function () {

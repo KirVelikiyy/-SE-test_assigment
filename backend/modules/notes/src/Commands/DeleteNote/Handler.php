@@ -2,6 +2,8 @@
 
 namespace Notes\Commands\DeleteNote;
 
+use Illuminate\Contracts\Events\Dispatcher;
+use Notes\Events\NoteDeleted;
 use Notes\Exceptions\NoteNotDeleted;
 use Notes\Exceptions\NoteNotFound;
 use Notes\Exceptions\NotePermissionDenied;
@@ -10,7 +12,8 @@ use Notes\Repositories\NoteRepository;
 readonly class Handler
 {
     public function __construct(
-        private NoteRepository $repository
+        private NoteRepository $repository,
+        private Dispatcher $eventDispatcher,
     ) {
     }
 
@@ -29,6 +32,8 @@ readonly class Handler
         if (!$deleted) {
             throw new NoteNotDeleted();
         }
+
+        $this->eventDispatcher->dispatch(new NoteDeleted($note));
     }
 }
 

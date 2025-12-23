@@ -2,6 +2,8 @@
 
 namespace Notes\Commands\UpdateNote;
 
+use Illuminate\Contracts\Events\Dispatcher;
+use Notes\Events\NoteUpdated;
 use Notes\Exceptions\NoteNotFound;
 use Notes\Exceptions\NotePermissionDenied;
 use Notes\Models\Note;
@@ -10,7 +12,8 @@ use Notes\Repositories\NoteRepository;
 readonly class Handler
 {
     public function __construct(
-        private NoteRepository $repository
+        private NoteRepository $repository,
+        private Dispatcher $eventDispatcher,
     ) {
     }
 
@@ -25,7 +28,11 @@ readonly class Handler
             throw new NotePermissionDenied();
         }
 
-        return $this->repository->updateNote($command->noteId, $command->dto);
+        $updatedNote = $this->repository->updateNote($command->noteId, $command->dto);
+
+        $this->eventDispatcher->dispatch(new NoteUpdated($updatedNote->id));
+
+        return $updatedNote;
     }
 }
 
