@@ -21,4 +21,18 @@ class NoteRepository
             'body' => $dto->body,
         ]);
     }
+
+    public function deleteNote(int $noteId): bool
+    {
+        return (bool)$this->query()
+            ->where('id', $noteId)
+            ->delete();
+    }
+
+    public function getNoteById(int $noteId): ?Note
+    {
+      return $this->query()
+      ->where('id', $noteId)
+      ->first();
+    }
 }
