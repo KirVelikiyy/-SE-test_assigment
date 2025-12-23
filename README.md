@@ -16,11 +16,12 @@ docker compose up -d
 ### 2. Установка зависимостей и настройка
 
 ```bash
-docker compose exec backend composer install
 docker compose exec backend php artisan key:generate
 docker compose exec backend php artisan migrate
 docker compose exec backend php artisan passport:keys
 docker compose exec backend php artisan db:seed
+docker compose down
+docker compose up -d
 ```
 
 ### 3. Готово!
