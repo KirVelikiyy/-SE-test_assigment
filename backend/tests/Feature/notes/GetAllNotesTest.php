@@ -1,8 +1,8 @@
 <?php
 
 use App\Models\User;
+use Laravel\Passport\Passport;
 use Notes\Models\Note;
-use function Pest\Laravel\actingAs;
 use function Pest\Laravel\getJson;
 
 test('can get all notes for authenticated user', function () {
@@ -17,7 +17,8 @@ test('can get all notes for authenticated user', function () {
         'user_id' => $otherUser->id,
     ]);
 
-    $response = actingAs($user)->getJson('/api/notes');
+    Passport::actingAs($user);
+    $response = getJson('/api/notes');
 
     $response->assertStatus(200)
         ->assertJsonStructure([
@@ -45,7 +46,8 @@ test('can get all notes for authenticated user', function () {
 test('returns empty array when user has no notes', function () {
     $user = User::factory()->create();
 
-    $response = actingAs($user)->getJson('/api/notes');
+    Passport::actingAs($user);
+    $response = getJson('/api/notes');
 
     $response->assertStatus(200)
         ->assertJson([
@@ -67,7 +69,8 @@ test('returns only notes belonging to authenticated user', function () {
         'title' => 'Other User Note',
     ]);
 
-    $response = actingAs($user)->getJson('/api/notes');
+    Passport::actingAs($user);
+    $response = getJson('/api/notes');
 
     $response->assertStatus(200);
 

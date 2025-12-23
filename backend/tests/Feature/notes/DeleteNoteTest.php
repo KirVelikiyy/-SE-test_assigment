@@ -3,10 +3,11 @@
 use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Support\Facades\Event;
+use Laravel\Passport\Passport;
 use Notes\Events\NoteDeleted;
 use Notes\Models\Note;
-use function Pest\Laravel\actingAs;
 use function Pest\Laravel\assertDatabaseMissing;
+use function Pest\Laravel\deleteJson;
 
 test('can delete a note', function () {
     Event::fake();
@@ -20,7 +21,8 @@ test('can delete a note', function () {
 
     $noteId = $note->id;
 
-    $response = actingAs($user)->deleteJson("/api/notes/{$note->id}");
+    Passport::actingAs($user);
+    $response = deleteJson("/api/notes/{$note->id}");
 
     $response->assertStatus(204);
 
@@ -44,7 +46,8 @@ test('returns 403 when trying to delete note of another user', function () {
         'body' => ['text' => 'Test content'],
     ]);
 
-    $response = actingAs($otherUser)->deleteJson("/api/notes/{$note->id}");
+    Passport::actingAs($otherUser);
+    $response = deleteJson("/api/notes/{$note->id}");
 
     $response->assertStatus(403);
     
@@ -56,7 +59,8 @@ test('returns 404 when note does not exist', function () {
     
     $user = User::factory()->create();
 
-    $response = actingAs($user)->deleteJson('/api/notes/0');
+    Passport::actingAs($user);
+    $response = deleteJson('/api/notes/0');
 
     $response->assertStatus(404);
     
@@ -76,7 +80,8 @@ test('admin can delete note of another user', function () {
 
     $noteId = $note->id;
 
-    $response = actingAs($admin)->deleteJson("/api/notes/{$note->id}");
+    Passport::actingAs($admin);
+    $response = deleteJson("/api/notes/{$note->id}");
 
     $response->assertStatus(204);
 

@@ -2,8 +2,8 @@
 
 use App\Models\User;
 use Illuminate\Support\Facades\Event;
+use Laravel\Passport\Passport;
 use Notes\Events\NoteCreated;
-use function Pest\Laravel\actingAs;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\postJson;
 
@@ -17,7 +17,8 @@ test('can create a note', function () {
         'body' => ['text' => 'This is a test note content'],
     ];
 
-    $response = actingAs($user)->postJson('/api/notes', $noteData);
+    Passport::actingAs($user);
+    $response = postJson('/api/notes', $noteData);
 
     $response->assertStatus(201)
         ->assertJsonStructure([
@@ -43,6 +44,9 @@ test('can create a note', function () {
 });
 
 test('returns 422 when title is missing', function () {
+    $user = User::factory()->create();
+    Passport::actingAs($user);
+    
     $response = postJson('/api/notes', [
         'body' => ['text' => 'Some content'],
     ]);
@@ -52,6 +56,9 @@ test('returns 422 when title is missing', function () {
 });
 
 test('returns 422 when body is missing', function () {
+    $user = User::factory()->create();
+    Passport::actingAs($user);
+    
     $response = postJson('/api/notes', [
         'title' => 'Test Note',
     ]);
@@ -61,6 +68,9 @@ test('returns 422 when body is missing', function () {
 });
 
 test('returns 422 when title is too short', function () {
+    $user = User::factory()->create();
+    Passport::actingAs($user);
+    
     $response = postJson('/api/notes', [
         'title' => 'A',
         'body' => ['text' => 'Some content'],
@@ -71,6 +81,9 @@ test('returns 422 when title is too short', function () {
 });
 
 test('returns 422 when title is too long', function () {
+    $user = User::factory()->create();
+    Passport::actingAs($user);
+    
     $response = postJson('/api/notes', [
         'title' => str_repeat('a', 256),
         'body' => ['text' => 'Some content'],
@@ -81,6 +94,9 @@ test('returns 422 when title is too long', function () {
 });
 
 test('returns 422 when body is not an array', function () {
+    $user = User::factory()->create();
+    Passport::actingAs($user);
+    
     $response = postJson('/api/notes', [
         'title' => 'Test Note',
         'body' => 'not an array',
@@ -91,6 +107,9 @@ test('returns 422 when body is not an array', function () {
 });
 
 test('returns 422 when title is empty string', function () {
+    $user = User::factory()->create();
+    Passport::actingAs($user);
+    
     $response = postJson('/api/notes', [
         'title' => '',
         'body' => ['text' => 'Some content'],

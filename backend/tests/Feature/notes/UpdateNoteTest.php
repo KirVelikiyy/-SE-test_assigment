@@ -3,9 +3,9 @@
 use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Support\Facades\Event;
+use Laravel\Passport\Passport;
 use Notes\Events\NoteUpdated;
 use Notes\Models\Note;
-use function Pest\Laravel\actingAs;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\putJson;
 
@@ -24,7 +24,8 @@ test('can update a note', function () {
         'body' => ['text' => 'Updated content'],
     ];
 
-    $response = actingAs($user)->putJson("/api/notes/{$note->id}", $updateData);
+    Passport::actingAs($user);
+    $response = putJson("/api/notes/{$note->id}", $updateData);
 
     $response->assertStatus(200)
         ->assertJsonStructure([
@@ -71,7 +72,8 @@ test('returns 403 when trying to update note of another user', function () {
         'body' => ['text' => 'Updated content'],
     ];
 
-    $response = actingAs($otherUser)->putJson("/api/notes/{$note->id}", $updateData);
+    Passport::actingAs($otherUser);
+    $response = putJson("/api/notes/{$note->id}", $updateData);
 
     $response->assertStatus(403);
     
@@ -88,7 +90,8 @@ test('returns 404 when note does not exist', function () {
         'body' => ['text' => 'Updated content'],
     ];
 
-    $response = actingAs($user)->putJson('/api/notes/99999', $updateData);
+    Passport::actingAs($user);
+    $response = putJson('/api/notes/99999', $updateData);
 
     $response->assertStatus(404);
     
@@ -101,7 +104,8 @@ test('returns 422 when title is missing', function () {
         'user_id' => $user->id,
     ]);
 
-    $response = actingAs($user)->putJson("/api/notes/{$note->id}", [
+    Passport::actingAs($user);
+    $response = putJson("/api/notes/{$note->id}", [
         'body' => ['text' => 'Some content'],
     ]);
 
@@ -115,7 +119,8 @@ test('returns 422 when body is missing', function () {
         'user_id' => $user->id,
     ]);
 
-    $response = actingAs($user)->putJson("/api/notes/{$note->id}", [
+    Passport::actingAs($user);
+    $response = putJson("/api/notes/{$note->id}", [
         'title' => 'Test Note',
     ]);
 
@@ -129,7 +134,8 @@ test('returns 422 when title is too short', function () {
         'user_id' => $user->id,
     ]);
 
-    $response = actingAs($user)->putJson("/api/notes/{$note->id}", [
+    Passport::actingAs($user);
+    $response = putJson("/api/notes/{$note->id}", [
         'title' => 'A',
         'body' => ['text' => 'Some content'],
     ]);
@@ -144,7 +150,8 @@ test('returns 422 when title is too long', function () {
         'user_id' => $user->id,
     ]);
 
-    $response = actingAs($user)->putJson("/api/notes/{$note->id}", [
+    Passport::actingAs($user);
+    $response = putJson("/api/notes/{$note->id}", [
         'title' => str_repeat('a', 256),
         'body' => ['text' => 'Some content'],
     ]);
@@ -159,7 +166,8 @@ test('returns 422 when body is not an array', function () {
         'user_id' => $user->id,
     ]);
 
-    $response = actingAs($user)->putJson("/api/notes/{$note->id}", [
+    Passport::actingAs($user);
+    $response = putJson("/api/notes/{$note->id}", [
         'title' => 'Test Note',
         'body' => 'not an array',
     ]);
@@ -184,7 +192,8 @@ test('admin can update note of another user', function () {
         'body' => ['text' => 'Updated content by admin'],
     ];
 
-    $response = actingAs($admin)->putJson("/api/notes/{$note->id}", $updateData);
+    Passport::actingAs($admin);
+    $response = putJson("/api/notes/{$note->id}", $updateData);
 
     $response->assertStatus(200)
         ->assertJson([

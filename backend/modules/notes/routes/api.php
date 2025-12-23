@@ -7,7 +7,7 @@ use Notes\Http\Actions\GetAll\Action as GetAllNotes;
 use Notes\Http\Actions\GetOne\Action as GetNote;
 use Notes\Http\Actions\Update\Action as UpdateNote;
 
-Route::group(['prefix' => 'notes'], function () {
+Route::group(['prefix' => 'notes', 'middleware' => ['auth:api']], function () {
     Route::post('/', CreateNote::class);
     Route::get('/', GetAllNotes::class);
     Route::get('/{note}', GetNote::class);

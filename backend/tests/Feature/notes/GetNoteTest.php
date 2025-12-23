@@ -2,8 +2,8 @@
 
 use App\Enums\UserRole;
 use App\Models\User;
+use Laravel\Passport\Passport;
 use Notes\Models\Note;
-use function Pest\Laravel\actingAs;
 use function Pest\Laravel\getJson;
 
 test('can get a note', function () {
@@ -14,7 +14,8 @@ test('can get a note', function () {
         'body' => ['text' => 'Test content'],
     ]);
 
-    $response = actingAs($user)->getJson("/api/notes/{$note->id}");
+    Passport::actingAs($user);
+    $response = getJson("/api/notes/{$note->id}");
 
     $response->assertStatus(200)
         ->assertJsonStructure([
@@ -46,7 +47,8 @@ test('returns 403 when trying to get note of another user', function () {
         'body' => ['text' => 'Test content'],
     ]);
 
-    $response = actingAs($otherUser)->getJson("/api/notes/{$note->id}");
+    Passport::actingAs($otherUser);
+    $response = getJson("/api/notes/{$note->id}");
 
     $response->assertStatus(403);
 });
@@ -54,7 +56,8 @@ test('returns 403 when trying to get note of another user', function () {
 test('returns 404 when note does not exist', function () {
     $user = User::factory()->create();
 
-    $response = actingAs($user)->getJson('/api/notes/99999');
+    Passport::actingAs($user);
+    $response = getJson('/api/notes/99999');
 
     $response->assertStatus(404);
 });
@@ -68,7 +71,8 @@ test('admin can get note of another user', function () {
         'body' => ['text' => 'Test content'],
     ]);
 
-    $response = actingAs($admin)->getJson("/api/notes/{$note->id}");
+    Passport::actingAs($admin);
+    $response = getJson("/api/notes/{$note->id}");
 
     $response->assertStatus(200)
         ->assertJsonStructure([
