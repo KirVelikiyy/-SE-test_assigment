@@ -2,7 +2,7 @@
     "openapi": "3.0.0",
     "info": {
         "title": "Notes API",
-        "description": "API для управления заметками с аутентификацией через Laravel Passport",
+        "description": "API для управления заметками с аутентификацией через Laravel Passport. Для получения токена используйте POST /oauth/token",
         "version": "1.0.0"
     },
     "servers": [
@@ -442,7 +442,7 @@
         "securitySchemes": {
             "passport": {
                 "type": "http",
-                "description": "Laravel Passport OAuth2 authentication",
+                "description": "Laravel Passport OAuth2 authentication. Получите токен через POST /oauth/token",
                 "bearerFormat": "JWT",
                 "scheme": "bearer"
             }
