@@ -31,7 +31,8 @@
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/",
-            "Notes\\": "modules/notes/src/"
+            "Notes\\": "modules/notes/src/",
+            "Notifications\\": "modules/Notifications/src/"
         }
     },
     "autoload-dev": {

@@ -115,4 +115,16 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Admin Recipient
+    |--------------------------------------------------------------------------
+    |
+    | This option defines the email address that will receive administrative
+    | notifications, such as notifications about new notes being created.
+    |
+    */
+
+    'admin_recipient' => env('MAIL_ADMIN_RECIPIENT', 'admin@example.com'),
+
 ];
